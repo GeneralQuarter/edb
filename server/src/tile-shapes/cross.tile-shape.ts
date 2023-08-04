@@ -1,7 +1,7 @@
 import type { TilePosition } from '../types/tile-position';
 import type { TileShape } from '../types/tile-shape';
 
-const CrossTileShape: TileShape = (origin: TilePosition, {size = 1, includeOrigin}): TilePosition[] => {
+const crossTileShape: TileShape = (origin: TilePosition, {size = 1, includeOrigin}): TilePosition[] => {
   const shape: TilePosition[] = [];
 
   for (let i = 1; i <= size; i++) {
@@ -18,4 +18,4 @@ const CrossTileShape: TileShape = (origin: TilePosition, {size = 1, includeOrigi
   return shape;
 }
 
-export default CrossTileShape;
+export default crossTileShape;

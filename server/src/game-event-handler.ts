@@ -15,9 +15,31 @@ export default abstract class GameEventHandler {
     this.eventBus = eventBus;
   }
 
-  abstract handle(event: GameEvent<any>): void;
+  abstract handle(event: GameEvent<any>): Promise<void>;
 
   protected log(message: string) {
     console.log(`[${this.name}] ${message}`);
+  }
+
+  protected getEntity(entityId: number) {
+    const entity = this.game.getEntity(entityId);
+
+    if (!entity) {
+      throw Error(`Could not find entity ${entityId}`);
+    }
+
+    return entity;
+  }
+
+  protected validateEntityTurn(entityId: number) {
+    if (this.game.turnEntityId !== entityId) {
+      throw new Error(`Not the turn of ${entityId} (currently ${this.game.turnEntityId})`);
+    }
+  }
+
+  protected validateEntityControlledByPlayer(entityId: number, playerToken?: string) {
+    if (playerToken && !this.game.isEntityControlledByPlayer(entityId, playerToken)) {
+      throw new Error(`Player ${playerToken} does not control entity ${entityId}`);
+    }
   }
 }

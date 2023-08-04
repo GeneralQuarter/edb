@@ -1,3 +1,4 @@
+import astarSearch, { Graph } from './lib/astar';
 import getRandomInt from './lib/random';
 import type { TilePosition } from './types/tile-position';
 
@@ -99,6 +100,16 @@ export default class Map {
     return tilePosition.y * this.width + tilePosition.x;
   }
 
+  removeEntity(entityId: number) {
+    const index = this.entityTiles.indexOf(entityId);
+
+    if (index === -1) {
+      return;
+    }
+
+    this.entityTiles[index] = 0;
+  }
+
   toState() {
     return {
       width: this.width,
@@ -132,5 +143,32 @@ export default class Map {
     if (save.spawnLocations) {
       this.spawnLocations = save.spawnLocations;
     }
+  }
+
+  path(from: TilePosition, to: TilePosition): TilePosition[] {
+    const weights: number[][] = [];
+
+    for (let y = 0; y < this.height; y++) {
+      weights[y] = [];
+
+      for (let x = 0; x < this.width; x++) {
+        weights[y][x] = (from.x === x && from.y === y) 
+        || !this.getEntityIdAtPosition({x, y}) ? 1 : 0;
+      }
+    }
+
+    const graph = new Graph(weights);
+
+    const start = graph.getNode(from.y, from.x);
+    const end = graph.getNode(to.y, to.x);
+
+    return astarSearch(graph, start, end)
+      .map(({x, y}) => ({x: y, y: x}));
+  }
+
+  distance(from: TilePosition, to: TilePosition): number {
+    const d1 = Math.abs(to.x - from.x);
+    const d2 = Math.abs(to.y - from.y);
+    return d1 + d2;
   }
 }

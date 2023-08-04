@@ -14,8 +14,8 @@ const Client: Component = () => {
   }
 
   return <>
-    {game()?.state === 'Lobby' && <Lobby />}
-    {game()?.state === 'Game' && <Game />}
+    {game?.state === 'Lobby' && <Lobby />}
+    {game?.state === 'Game' && <Game />}
     <br />
     <button onClick={userDisconnect}>Disconnect</button>
   </>

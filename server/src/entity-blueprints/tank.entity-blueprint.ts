@@ -3,7 +3,7 @@ import type { EntityBlueprint } from '../types/entity-blueprint';
 
 export default {
   playable: true,
-  abilities: [],
+  abilityIds: [],
   generateStats: () => ({
     health: 100 + roll(20),
     initiative: 70 + roll(20),

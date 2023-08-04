@@ -6,17 +6,18 @@ import type { TilePosition } from '../types/tile-position';
 
 export default class OnMoveGameEventHandler extends SingleGameEventHandler<MoveGameEvent> {
   handle({ entityId, direction, playerToken }: MoveData): void {
-    if (playerToken && !this.game.isEntityControlledByPlayer(entityId, playerToken)) {
-      throw new Error(`Player does not control entity ${entityId}`);
-    }
+    this.validateEntityControlledByPlayer(entityId, playerToken);
     
-    // TODO: entityId validation (number)
-    // TODO: direction validation (UP / DOWN / ...)
+    const entity = this.getEntity(entityId);
+
+    if (entity.movement <= 0) {
+      throw new Error(`Cannot move any more`);
+    }
 
     const currentPosition = this.game.map.getEntityTilePosition(entityId);
 
     if (!currentPosition) {
-      throw new Error(`Position of entity ${entityId} could not be found`);
+      throw new Error(`Position of entity ${entityId} not found`);
     }
 
     const nextPosition = this.getTilePositionFromDirection(currentPosition, direction);

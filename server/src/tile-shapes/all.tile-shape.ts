@@ -1,7 +1,7 @@
 import type { TilePosition } from '../types/tile-position';
 import type { TileShape } from '../types/tile-shape';
 
-const AllTileShape: TileShape = (origin: TilePosition, {map, includeOrigin}): TilePosition[] => {
+const allTileShape: TileShape = (origin: TilePosition, {map, includeOrigin}): TilePosition[] => {
   const shape = map.getAllTiles();
 
   if (!includeOrigin) {
@@ -12,4 +12,4 @@ const AllTileShape: TileShape = (origin: TilePosition, {map, includeOrigin}): Ti
   return shape;
 }
 
-export default AllTileShape;
+export default allTileShape;

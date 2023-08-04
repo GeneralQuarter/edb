@@ -9,11 +9,14 @@ import type { GameEvent } from './types/game-event';
 import isPlayerEventValid from './is-player-event-valid';
 import isEventBroadcastable from './is-event-broadcastable';
 import type { EntityBlueprint } from './types/entity-blueprint';
+import { TileShape } from './types/tile-shape';
+import { AbilityBlueprint } from './types/ability-blueprint';
+import { pascalCase } from './lib/pascal-case';
 
 const PORT = 3001;
 
-async function loadModules<T>(folderName: string): Promise<[string, T][]> {
-  const filenames = (await readdir(join(__dirname, folderName)));
+async function loadFolderModules<T>(folderName: string): Promise<[string, T][]> {
+  const filenames = (await readdir(join(__dirname, folderName))).filter(f => f.endsWith('.js'));
   const filenameAndModules: [string, T][]  = [];
 
   for (const filename of filenames) {
@@ -22,6 +25,19 @@ async function loadModules<T>(folderName: string): Promise<[string, T][]> {
   }
 
   return filenameAndModules;
+}
+
+async function loadFolderModulesByType<T>(folderName: string, typeName: string) {
+  const moduleByType: Record<string, T> = {};
+  const modules = await loadFolderModules<T>(folderName);
+
+  for (const [filename, module] of modules) {
+    const shapeType = pascalCase(filename.split('.')[0]);
+    moduleByType[shapeType] = module;
+    log(`Loaded ${shapeType}${typeName}`);
+  }
+
+  return moduleByType;
 }
 
 async function saveGame(game: Game) {
@@ -61,32 +77,19 @@ async function startup(io: Server) {
 
     io.emit('server_event', event);
   });
-
-  const camelcase = (await (import('camelcase'))).default;
-  const eventHandlerModules = await loadModules<any>('game-event-handlers');
+  const eventHandlerModules = await loadFolderModules<any>('game-event-handlers');
 
   for (const [eventHandlerFilename, GameEventHandler] of eventHandlerModules) {
-    const handlerName = camelcase(eventHandlerFilename.replace(/\.js$/, ''), {pascalCase: true});
+    const handlerName = pascalCase(eventHandlerFilename.replace(/\.js$/, ''));
     const eventType = handlerName.startsWith('On') ? handlerName.replace('On', '').replace('GameEventHandler', '') : null;
     eventBus.addHandler(eventType ? new GameEventHandler(handlerName, eventType, game, eventBus) : new GameEventHandler(handlerName, game, eventBus));
     log(`Loaded ${handlerName}`);
   }
 
-  const entityBlueprintByEntityType: Record<string, EntityBlueprint> = {};
-  const entityBlueprintModules = await loadModules<EntityBlueprint>('entity-blueprints');
-  const playableEntityTypes: string[] = [];
-
-  for (const [entityBlueprintFilename, entityBlueprint] of entityBlueprintModules) {
-    const entityType = camelcase(entityBlueprintFilename.split('.')[0], {pascalCase: true});
-    entityBlueprintByEntityType[entityType] = entityBlueprint;
-    log(`Loaded ${entityType}EntityBlueprint`);
-
-    if (entityBlueprint.playable) {
-      playableEntityTypes.push(entityType);
-    }
-  }
-
-  game.entityBlueprintByEntityType = entityBlueprintByEntityType;
+  game.tileShapeByShapeType = await loadFolderModulesByType<TileShape>('tile-shapes', 'TileShape');
+  game.abilityBlueprintByAbilityId = await loadFolderModulesByType<AbilityBlueprint>('ability-blueprints', 'AbilityBlueprint');
+  game.entityBlueprintByEntityType = await loadFolderModulesByType<EntityBlueprint>('entity-blueprints', 'EntityBlueprint');
+  const playableEntityTypes: string[] = Object.entries(game.entityBlueprintByEntityType).filter(([, eb]) => eb.playable).map(([entityType,]) => entityType);
   game.entityTypes = playableEntityTypes;
   log(`Playable entity types: ${playableEntityTypes.join(', ')}`);
 

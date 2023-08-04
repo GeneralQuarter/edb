@@ -39,13 +39,13 @@ export default class EventBus {
     this.handleNextEvent();
   }
 
-  public handleEvent<T extends GameEvent<any>>(type: T['type'], data: T['data']) {
+  public async handleEvent<T extends GameEvent<any>>(type: T['type'], data: T['data']) {
     const handlers = this.handlers.filter(h => h.eventTypes.includes(type));
 
     for (const handler of handlers) {
       try {
         console.log(`[${handler.constructor.name}] Handle ${type} ${JSON.stringify(data)}`);
-        handler.handle(handler.eventTypes.length === 1 ? data : {type, data});
+        await handler.handle(handler.eventTypes.length === 1 ? data : {type, data});
       } catch (e) {
         console.log(`[${handler.constructor.name}] ${e}${(e as Error).stack ? `\n${(e as Error).stack}` : ''}`);
       }

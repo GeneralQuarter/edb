@@ -1,15 +1,18 @@
 import { type Accessor, createContext, type Component, createSignal, type JSX, onMount, onCleanup, useContext } from 'solid-js';
+import { createStore, produce, reconcile } from 'solid-js/store';
 import type { Game } from '../types/game';
 import { io, type Socket } from 'socket.io-client';
 import type { User } from '../types/user';
 import type { Player } from '../types/player';
 import type { GameEvent } from '../types/game-event';
+import type { Entity } from '../types/entity';
 import { toTileIndex } from '../lib/board';
 
 type ContextValue = [
   {
-    game: Accessor<Game | null>,
+    game: Game | null,
     player: Accessor<Player | null>,
+    playerEntity: Accessor<Entity | null>,
   },
   {
     disconnect: () => void,
@@ -19,8 +22,9 @@ type ContextValue = [
 
 const GameContext = createContext<ContextValue>([
   {
-    game: () => null,
+    game: null,
     player: () => null,
+    playerEntity: () => null,
   }, 
   {
     disconnect: () => {},
@@ -35,7 +39,7 @@ type Props = {
 
 const GameProvider: Component<Props> = (props) => {
   const [socket, setSocket] = createSignal<Socket | null>(null);
-  const [game, setGame] = createSignal<Game | null>(null);
+  const [game, setGame] = createStore<Game>({state: 'Lobby', entities: [],entityTypes: [], map: {entityTiles: [], height: 1, width: 1}, players: []});
 
   onMount(() => {
     const s = io("localhost:3001", {
@@ -54,35 +58,21 @@ const GameProvider: Component<Props> = (props) => {
     });
 
     s.on('server_event', (event) => {
-      console.log(event);
       switch (event.type) {
         case 'Moved': {
-          setGame(g => {
-            if (!g) {
-              return null;
-            }
-
+          setGame(produce(g => {
             const prevIndex = toTileIndex(event.data.from, g.map.width);
             const nextIndex = toTileIndex(event.data.to, g.map.width);
 
-            const newEntityTiles = g.map.entityTiles.slice();
-            newEntityTiles[prevIndex] = 0;
-            newEntityTiles[nextIndex] = event.data.entityId;
-
-            return {
-              ...g,
-              map: {
-                ...g.map,
-                entityTiles: newEntityTiles,
-              },
-            };
-          });
+            g.map.entityTiles[prevIndex] = 0;
+            g.map.entityTiles[nextIndex] = event.data.entityId;
+          }));
         }
       }
     });
 
     s.on('game_state', (state: Game) => {
-      setGame(state);
+      setGame(reconcile(state));
     });
 
     setSocket(s);
@@ -111,19 +101,24 @@ const GameProvider: Component<Props> = (props) => {
   });
 
   const player: Accessor<Player | null> = () => {
-    const _game = game();
+    return game.players.find(p => p.username === props.user.username) ?? null;
+  };
 
-    if (!_game) {
+  const playerEntity: Accessor<Entity | null> = () => {
+    const _player = player();
+
+    if (!_player) {
       return null;
     }
 
-    return _game.players.find(p => p.username === props.user.username) ?? null;
-  };
+    return game.entities.find(e => e.id === _player.entityId) ?? null;
+  }
 
   const value: ContextValue = [
     {
       game,
       player,
+      playerEntity,
     },
     {
       disconnect,

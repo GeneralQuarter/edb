@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --signal SIGINT",
+    "debug": "nodemon --signal SIGINT --inspect",
     "test": "jest"
   },
   "keywords": [],
@@ -22,7 +23,6 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "camelcase": "^7.0.1",
     "socket.io": "^4.7.2"
   }
 }

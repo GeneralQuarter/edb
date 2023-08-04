@@ -5,6 +5,7 @@ const allowedPlayerEventTypes = [
   'StartGame',
   'NextTurn',
   'Move',
+  'CastAbility',
 ];
 
 export default function isPlayerEventValid(event: GameEvent<any>) {

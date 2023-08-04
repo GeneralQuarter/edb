@@ -11,27 +11,15 @@ export function toTileIndex(position: TilePosition, width: number): number {
   return position.y * width + position.x;
 }
 
-export function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, tileSize: number) {
-
-  for (let x = 0; x <= width; x += tileSize) {
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-  }
-
-  for (let y = 0; y <= height; y += tileSize) {
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-  }
-
-  ctx.strokeStyle = "rgb(85, 143, 57)";
-  ctx.stroke();
+export function allTiles(width: number, height: number): TilePosition[] {
+  return Array(width * height).map((_, i) => toTilePosition(i, width));
 }
 
-export function drawImage(ctx: CanvasRenderingContext2D, image: HTMLImageElement, position: TilePosition, tileSize: number, padding: number) {
-  const ratio = image.width / image.height;
-  const dHeight = tileSize - (padding * 2);
-  const dWidth = dHeight * ratio;
-  const dx = (tileSize * position.x) + (tileSize / 2) - (dWidth / 2);
-  const dy = (tileSize * position.y) + padding;
-  ctx.drawImage(image, 0, 0, image.width, image.height, dx, dy, dWidth, dHeight);
+export function isTileInMap(position: TilePosition, width: number, height: number): boolean {
+  const index = toTileIndex(position, width);
+  return index >= 0 && index < width * height;
+}
+
+export function isTileInTiles(tile: TilePosition, tiles: TilePosition[]) {
+  return tiles.some(t => t.x === tile.x && t.y === tile.y);
 }

@@ -7,7 +7,7 @@ const Lobby: Component = () => {
   const [{ game, player }, { sendEvent }] = useGame();
 
   const entityTypes = () => {
-    return game()?.entityTypes ?? [];
+    return game?.entityTypes ?? [];
   };
 
   const selectCharacter = (entityType: string) => {

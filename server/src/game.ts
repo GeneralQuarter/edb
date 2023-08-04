@@ -1,10 +1,12 @@
 
 import Map from './map';
+import type { AbilityBlueprint } from './types/ability-blueprint';
 import type { Entity } from './types/entity';
-import { EntityBlueprint } from './types/entity-blueprint';
-import type { EntityStatsBlueprint } from './types/entity-stats-blueprint';
+import type { EntityBlueprint } from './types/entity-blueprint';
 import type { Player } from './types/player';
 import type { TilePosition } from './types/tile-position';
+import type { ShapeOptions, TileShape } from './types/tile-shape';
+import { TileShapeReference } from './types/tile-shape-reference';
 
 export default class Game {
   public map: Map;
@@ -14,6 +16,8 @@ export default class Game {
   public entityTypes: string[];
   public turnEntityId: number | undefined;
 
+  public tileShapeByShapeType: Record<string, TileShape>;
+  public abilityBlueprintByAbilityId: Record<string, AbilityBlueprint>;
   public entityBlueprintByEntityType: Record<string, EntityBlueprint>;
 
   constructor() {
@@ -22,6 +26,8 @@ export default class Game {
     this.state = 'Lobby';
     this.players = [];
     this.entityTypes = [];
+    this.tileShapeByShapeType = {};
+    this.abilityBlueprintByAbilityId = {};
     this.entityBlueprintByEntityType = {};
   }
 
@@ -74,6 +80,22 @@ export default class Game {
 
     const playerIndex = this.players.indexOf(player);
     this.players.splice(playerIndex, 1);
+
+    if (player.entityId) {
+      this.removeEntity(player.entityId);
+    }
+  }
+
+  removeEntity(entityId: number) {
+    const entity = this.getEntity(entityId);
+
+    if (!entity) {
+      return;
+    }
+
+    const entityIndex = this.entities.indexOf(entity);
+    this.entities.splice(entityIndex, 1);
+    this.map.removeEntity(entityId);
   }
 
   toState() {
@@ -122,6 +144,80 @@ export default class Game {
 
     if (save.map) {
       this.map.restoreFromSave(save.map);
+    }
+  }
+
+  getEntitiesOfType(entityType: string) {
+    return this.entities.filter(e => e.type === entityType);
+  }
+
+  getPlayerEntityIds(): number[] {
+    return this.players.map(p => p.entityId).filter(n => !!n) as number[];
+  }
+
+  getClosestPlayerEntity(from: TilePosition): {entityId: number, position: TilePosition} | null {
+    const playerEntityIds = this.getPlayerEntityIds();
+
+    if (playerEntityIds.length === 0) {
+      return null;
+    }
+
+    let distance = Infinity;
+    let entityId: number | null = null;
+    let position: TilePosition | null = null;
+
+    for (const playerEntityId of playerEntityIds) {
+      const playerPosition = this.map.getEntityTilePosition(playerEntityId);
+
+      if (!playerPosition) {
+        continue;
+      }
+
+      const d = this.map.distance(from, playerPosition);
+
+      if (d < distance) {
+        distance = d;
+        entityId = playerEntityId;
+        position = playerPosition;
+      }
+    }
+
+    if (!entityId || !position) {
+      return null;
+    }
+
+    return {entityId, position};
+  }
+
+  computeShape(tileShapeReference: TileShapeReference, origin: TilePosition): TilePosition[] {
+    const tileShapeId = typeof tileShapeReference === 'string' ? tileShapeReference : tileShapeReference.shape;
+    const options: ShapeOptions = typeof tileShapeReference === 'string' ? {map: this.map} : {map: this.map, size: tileShapeReference.size, includeOrigin: tileShapeReference.includeOrigin};
+    const tileShape = this.tileShapeByShapeType[tileShapeId];
+
+    if (!tileShape) {
+      return [];
+    }
+
+    return tileShape(origin, options).filter(position => this.map.isInMap(position));
+  }
+
+  getPlayerTiles() {
+    return this.getPlayerEntityIds()
+    .map(id => this.map.getEntityTilePosition(id))
+    .filter(n => !!n) as TilePosition[];
+  }
+
+  getEntitiesInTiles(tiles: TilePosition[]) {
+    return tiles.map(tile => this.map.getEntityIdAtPosition(tile))
+      .map(entityId => entityId ? this.getEntity(entityId) : null)
+      .filter(entity => !!entity) as Entity[];
+  }
+
+  returnToLobby() {
+    this.state = 'Lobby';
+    
+    for (const entity of this.entities) {
+      this.removeEntity(entity.id);
     }
   }
 }
