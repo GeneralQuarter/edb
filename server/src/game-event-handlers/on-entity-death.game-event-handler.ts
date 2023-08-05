@@ -7,9 +7,9 @@ export default class OnEntityDeathGameEventHandler extends SingleGameEventHandle
   handle({ entityId }: EntityDeathData): void {
     this.game.removeEntity(entityId);
 
-    const playerEntityIds = this.game.getPlayerEntityIds();
+    const playerTiles = this.game.getPlayerTiles();
 
-    if (playerEntityIds.length === 0 || this.game.entities.length === 1) {
+    if (playerTiles.length === 0 || this.game.entities.length === 1) {
       this.eventBus.dispatch<GameOverGameEvent>('GameOver', {});
       return;
     }

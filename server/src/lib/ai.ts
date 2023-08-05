@@ -1,6 +1,5 @@
 import EventBus from '../event-bus';
 import Game from '../game';
-import { Ability } from '../types/ability';
 import type { Entity } from '../types/entity';
 import type { MoveGameEvent } from '../types/game-events/move.game-event';
 import type { TilePosition } from '../types/tile-position';
@@ -30,7 +29,7 @@ export async function moveTowardsClosestPlayer(entity: Entity, game: Game, event
       direction: nextDirection(from, move),
     });
     from = move;
-    await delay(1000);
+    await delay(200);
   }
 }
 
