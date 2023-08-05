@@ -1,5 +1,7 @@
 import GameEventHandler from './game-event-handler';
+import { dateLog } from './lib/logger';
 import type { GameEvent } from './types/game-event';
+import colors from 'colors/safe';
 
 export default class EventBus {
   private globalHandler: (event: GameEvent<any>) => void;
@@ -19,7 +21,7 @@ export default class EventBus {
 
   public dispatch<T extends GameEvent<any>>(type: T['type'], data: T['data']) {
     const event = {type, data};
-    this.log(`Dispatch ${JSON.stringify(event)}`);
+    this.log(`Dispatch ${colors.green(type)} ${colors.gray(JSON.stringify(data))}`);
     this.queue.unshift(event);
 
     clearTimeout(this.dispatchTimeout);
@@ -35,8 +37,10 @@ export default class EventBus {
       return;
     }
 
-    this.handleEvent(event.type, event.data);
-    this.handleNextEvent();
+    this.handleEvent(event.type, event.data)
+      .finally(() => {
+        this.handleNextEvent();
+      });
   }
 
   public async handleEvent<T extends GameEvent<any>>(type: T['type'], data: T['data']) {
@@ -44,10 +48,10 @@ export default class EventBus {
 
     for (const handler of handlers) {
       try {
-        console.log(`[${handler.constructor.name}] Handle ${type} ${JSON.stringify(data)}`);
+        dateLog(`Handle   ${colors.green(type)} ${colors.gray(JSON.stringify(data))}`);
         await handler.handle(handler.eventTypes.length === 1 ? data : {type, data});
       } catch (e) {
-        console.log(`[${handler.constructor.name}] ${e}${(e as Error).stack ? `\n${(e as Error).stack}` : ''}`);
+        dateLog(e as string);
       }
     }
 
@@ -55,6 +59,6 @@ export default class EventBus {
   }
 
   private log(message: string) {
-    console.log(`[EventBus] ${message}`);
+    dateLog(message);
   }
 }

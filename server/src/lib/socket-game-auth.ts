@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io';
 import Game from '../game';
+import { dateLog } from './logger';
 
 export default function socketGameAuth(game: Game) {
   return (socket: Socket, next: (err?: Error) => void) => {
@@ -9,7 +10,7 @@ export default function socketGameAuth(game: Game) {
       return next(new Error('MissingAuth'));
     }
 
-    console.log(`[Socket.IO] Connection request from ${username} (${token})`);
+    dateLog(`Connection request from ${username} (${token})`);
 
     const existingPlayerWithUsername = game.getPlayerWithUsername(username);
 

@@ -1,6 +1,7 @@
 import { readdir } from 'fs/promises';
 import { join } from 'path';
 import { pascalCase } from './pascal-case';
+import { dateLog } from './logger';
 
 export async function loadModulesInFolder<T>(folderName: string) {
   const modules: Record<string, T> = {};
@@ -12,7 +13,7 @@ export async function loadModulesInFolder<T>(folderName: string) {
     modules[type] = module;
   }
 
-  console.log(`[FolderModules] Loaded from ${folderName}: ${Object.keys(modules).join(', ')}`);
+  dateLog(`Loaded from ${folderName}: ${Object.keys(modules).join(', ')}`);
 
   return modules;
 }

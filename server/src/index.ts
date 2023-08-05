@@ -13,12 +13,9 @@ import { load, save } from './lib/persistance';
 import { loadModulesInFolder } from './lib/folder-modules';
 import GameEventHandler from './game-event-handler';
 import socketGameAuth from './lib/socket-game-auth';
+import { dateLog } from './lib/logger';
 
 const PORT = 3001;
-
-function log(message: string) {
-  console.log(`[Startup] ${message}`);
-}
 
 async function startup(io: Server) {
   const game = new Game();
@@ -43,7 +40,7 @@ async function startup(io: Server) {
 
   const playableEntityTypes: string[] = Object.entries(game.entityBlueprintByEntityType).filter(([, eb]) => eb.playable).map(([entityType,]) => entityType);
   game.entityTypes = playableEntityTypes;
-  log(`Playable entity types: ${playableEntityTypes.join(', ')}`);
+  dateLog(`Playable entity types: ${playableEntityTypes.join(', ')}`);
 
   await load(game);
 
@@ -87,11 +84,11 @@ const io = new Server({
 (async () => {
   try {
     await startup(io);
-    log(`Server started`);
+    dateLog('Server started');
   } catch (e) {
-    console.log(e);
+    dateLog(e as string);
   }
 })();
 
 io.listen(PORT);
-log(`Listening on ${PORT}...`);
+dateLog(`Listening on ${PORT}...`);

@@ -33,7 +33,7 @@ const Board: Component<Props> = (props) => {
       return [];
     }
 
-    return game.entities.map(e => e.type);
+    return [...new Set(game.entities.map(e => e.type))];
   }
 
   const width = () => {

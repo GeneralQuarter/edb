@@ -6,7 +6,7 @@ import type { TurnStartedGameEvent } from '../types/game-events/turn-started.gam
 export default class OnNextTurnGameEventHandler extends SingleGameEventHandler<NextTurnEvent> {
   handle({ playerToken }: NextTurnData): void {
     if (this.game.state !== 'Game') {
-      throw new Error('Game not started');
+      return;
     }
 
     const player = this.game.getPlayerWithToken(playerToken ?? '');

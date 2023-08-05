@@ -1,3 +1,4 @@
+import { delay } from '../lib/timer';
 import SingleGameEventHandler from '../single-game-event-handler';
 import { AbilityBlueprint } from '../types/ability-blueprint';
 import type { Entity } from '../types/entity';
@@ -6,7 +7,7 @@ import type { NextTurnEvent } from '../types/game-events/next-turn.game-event';
 import type { StartGameData, StartGameGameEvent } from '../types/game-events/start-game.game-event';
 
 export default class OnStartGameGameEventHandler extends SingleGameEventHandler<StartGameGameEvent> {
-  handle(_: StartGameData): void {
+  async handle(_: StartGameData): Promise<void> {
     if (this.game.state !== 'Lobby') {
       throw new Error('Game is already started');
     }
@@ -61,6 +62,8 @@ export default class OnStartGameGameEventHandler extends SingleGameEventHandler<
     }
 
     this.game.state = 'Game';
+
+    await delay(3000);
 
     this.eventBus.dispatch<NextTurnEvent>('NextTurn', {});
   }

@@ -1,13 +1,10 @@
 import { readFile, writeFile } from 'fs/promises';
 import Game from '../game';
 import { join } from 'path';
-
-function log(msg: string) {
-  console.log(`[Persistance] ${msg}`);
-}
+import { dateLog } from './logger';
 
 export async function save(game: Game) {
-  log('Saving game...');
+  dateLog('Saving game...');
   await writeFile(join(__dirname, '..', 'save.json'), JSON.stringify(game.toServerState(), null, 2), 'utf-8');
 }
 
@@ -29,7 +26,7 @@ export async function load(game: Game) {
   } catch (e) {}
 
   if (save) {
-    log('Restore from save...');
+    dateLog('Restore from save...');
     game.restoreFromSave(save);
   }
 }

@@ -1,5 +1,6 @@
 import EventBus from './event-bus';
 import Game from './game';
+import { dateLog } from './lib/logger';
 import type { GameEvent } from './types/game-event';
 
 export default abstract class GameEventHandler {
@@ -18,7 +19,7 @@ export default abstract class GameEventHandler {
   abstract handle(event: GameEvent<any>): Promise<void>;
 
   protected log(message: string) {
-    console.log(`[${this.name}] ${message}`);
+    dateLog(message);
   }
 
   protected getEntity(entityId: number) {
