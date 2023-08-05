@@ -1,0 +1,42 @@
+.notifier-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.notification-cluster {
+  position: absolute;
+  display: flex;
+  gap: 2px;
+  flex-direction: column;
+}
+
+.notification {
+  box-sizing: border-box;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  padding: 2px 4px;
+  animation: 3s linear pop;
+  text-align: center;
+}
+
+.notifier-container button {
+  pointer-events: all;
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, -12px, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -24px, 0);
+  }
+}

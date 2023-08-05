@@ -216,8 +216,15 @@ export default class Game {
   returnToLobby() {
     this.state = 'Lobby';
     
-    for (const entity of this.entities) {
+    for (const entity of this.entities.slice()) {
       this.removeEntity(entity.id);
     }
+
+    for (const player of this.players) {
+      player.entityId = undefined;
+      player.entityType = undefined;
+    }
+
+    this.turnEntityId = undefined;
   }
 }

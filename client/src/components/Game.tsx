@@ -6,8 +6,10 @@ import type { Ability } from '../types/ability';
 import type { TilePosition } from '../types/tile-position';
 import { isTileInTiles, toTilePosition } from '../lib/board';
 import { computeShape } from '../lib/tile-shapes';
+import Notifier from './Notifier';
 
 const directions: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+const tileSize = 44;
 
 const Game: Component = () => {
   const [{ game, player, playerEntity }, { sendEvent }] = useGame();
@@ -105,7 +107,8 @@ const Game: Component = () => {
   }
 
   return <>
-    <Board reachTiles={reachTiles()} onClick={onTileClicked}/>
+    <Board tileSize={tileSize} reachTiles={reachTiles()} onClick={onTileClicked}/>
+    <Notifier tileSize={tileSize} />
     <br/>
     <For each={abilities()}>{(ability) => 
       <button onClick={() => abilityClicked(ability)}>{ability.name}</button>

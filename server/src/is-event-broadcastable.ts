@@ -2,7 +2,8 @@ import { GameEvent } from './types/game-event';
 
 const broadcastableEventTypes = [
   'TurnStarted',
-  'StatChanged',
+  'EntityStatChanged',
+  'AbilityMissed',
   'Moved',
 ]
 

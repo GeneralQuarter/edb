@@ -3,15 +3,18 @@ import Connect from './components/Connect';
 import Client from './components/Client';
 import { useUser } from './contexts/user';
 import GameProvider from './contexts/game';
+import NotificationsProvider from './contexts/notifications';
 
 const App: Component = () => {
   const [user] = useUser();
 
   return <>
     {!user() && <Connect />}
-    {user() && <GameProvider user={user()!}>
-      <Client />
-    </GameProvider>}
+    {user() && <NotificationsProvider>
+      <GameProvider user={user()!}>
+        <Client />
+      </GameProvider>
+    </NotificationsProvider>}
   </>
 };
 

@@ -5,6 +5,11 @@ import type { EntityStatChangedGameEvent } from '../types/game-events/entity-sta
 
 export function bumpStat(eventBus: EventBus, entity: Entity, stat: keyof EntityStats, amount: number, max: number) {
   const from = entity[stat];
+
+  if (from > max) {
+    return;
+  }
+
   const to = Math.min(from + amount, max);
 
   changeStat(eventBus, entity, stat, from, to);
@@ -12,6 +17,11 @@ export function bumpStat(eventBus: EventBus, entity: Entity, stat: keyof EntityS
 
 export function decreaseStat(eventBus: EventBus, entity: Entity, stat: keyof EntityStats, amount: number, min: number = 0) {
   const from = entity[stat];
+
+  if (from < min) {
+    return;
+  }
+  
   const to = Math.max(from - amount, min);
 
   changeStat(eventBus, entity, stat, from, to);

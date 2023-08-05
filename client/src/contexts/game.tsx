@@ -7,6 +7,8 @@ import type { Player } from '../types/player';
 import type { GameEvent } from '../types/game-event';
 import type { Entity } from '../types/entity';
 import { toTileIndex } from '../lib/board';
+import { useNotifications } from './notifications';
+import { createMissNotification, createStatNotification } from '../lib/notification';
 
 type ContextValue = [
   {
@@ -40,6 +42,7 @@ type Props = {
 const GameProvider: Component<Props> = (props) => {
   const [socket, setSocket] = createSignal<Socket | null>(null);
   const [game, setGame] = createStore<Game>({state: 'Lobby', entities: [],entityTypes: [], map: {entityTiles: [], height: 1, width: 1}, players: []});
+  const [, addNotification] = useNotifications();
 
   onMount(() => {
     const s = io("localhost:3001", {
@@ -67,6 +70,27 @@ const GameProvider: Component<Props> = (props) => {
             g.map.entityTiles[prevIndex] = 0;
             g.map.entityTiles[nextIndex] = event.data.entityId;
           }));
+          break;
+        }
+        case 'EntityStatChanged': {
+          const notification = createStatNotification(game, event.data);
+
+          if (!notification) {
+            break;
+          }
+
+          addNotification(notification);
+          break;
+        }
+        case 'AbilityMissed': {
+          const notification = createMissNotification(game, event.data);
+
+          if (!notification) {
+            break;
+          }
+
+          addNotification(notification);
+          break;
         }
       }
     });

@@ -6,6 +6,7 @@ import { drawBackground, drawGrid, drawImage, drawShape } from '../lib/draw';
 import { TilePosition } from '../types/tile-position';
 
 type Props = {
+  tileSize: number;
   reachTiles: TilePosition[];
   onClick: (mouseTile: TilePosition) => void;
 }
@@ -14,8 +15,6 @@ const Board: Component<Props> = (props) => {
   const [{ game }] = useGame();
   let canvas: HTMLCanvasElement | undefined;
   let spritesByEntityType: Record<string, HTMLImageElement | undefined> = {};
-
-  const tileSize = 40;
 
   const entities = () => {
     if (!game) {
@@ -59,7 +58,7 @@ const Board: Component<Props> = (props) => {
 
       ctx.clearRect(0, 0, w, h);
       drawBackground(ctx, w, h);
-      drawGrid(ctx, w, h, tileSize);
+      drawGrid(ctx, w, h, props.tileSize);
 
       for (const entity of entities()) {
         const image = spritesByEntityType[entity.type];
@@ -68,10 +67,10 @@ const Board: Component<Props> = (props) => {
           continue;
         }
 
-        drawImage(ctx, image, entity, tileSize, 2);
+        drawImage(ctx, image, entity, props.tileSize, 2);
       }
 
-      drawShape(ctx, props.reachTiles, tileSize);
+      drawShape(ctx, props.reachTiles, props.tileSize);
     }
 
     onCleanup(() => cancelAnimationFrame(frame));
@@ -84,7 +83,7 @@ const Board: Component<Props> = (props) => {
 
     const gx = evt.clientX - canvas.offsetLeft;
     const gy = evt.clientY - canvas.offsetTop;
-    return {x: Math.floor(gx / tileSize), y: Math.floor(gy / tileSize)};
+    return {x: Math.floor(gx / props.tileSize), y: Math.floor(gy / props.tileSize)};
   }
 
   const canvasClicked = (evt: MouseEvent) => {
@@ -101,7 +100,7 @@ const Board: Component<Props> = (props) => {
     <For each={playedEntityTypes()}>{entityType => 
       <img ref={spritesByEntityType[entityType]} src={`/images/${entityType.toLowerCase()}.gif`} class="resource-image" />
     }</For>
-    <canvas ref={canvas} width={width() * tileSize} height={height() * tileSize} onClick={evt => canvasClicked(evt)} />
+    <canvas ref={canvas} width={width() * props.tileSize} height={height() * props.tileSize} onClick={evt => canvasClicked(evt)} />
   </>;
 }
 
